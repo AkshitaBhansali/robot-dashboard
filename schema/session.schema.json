@@ -1,0 +1,131 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "RobotSession",
+  "description": "A container grouping all events in one robot interaction session",
+  "type": "object",
+  "required": ["session_id", "robot_id"],
+  "properties": {
+    "session_id": {
+      "type": "string",
+      "description": "Unique identifier for this session",
+      "example": "sess_88a3f1"
+    },
+
+    "robot_id": {
+      "type": "string",
+      "description": "Identifier of the physical robot unit running this session",
+      "default": "bot_01",
+      "example": "bot_01"
+    },
+
+    "user_id": {
+      "type": ["string", "null"],
+      "description": "Identifier of the user interacting with the robot in this session",
+      "example": "user_01"
+    },
+
+    "start_ts": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 UTC timestamp of when the session started",
+      "example": "2025-08-14T10:00:00Z"
+    },
+
+    "end_ts": {
+      "type": ["string", "null"],
+      "format": "date-time",
+      "description": "ISO 8601 UTC timestamp of when the session ended. Null if session is still active",
+      "example": "2025-08-14T10:22:14Z"
+    },
+
+    "duration_s": {
+      "type": ["integer", "null"],
+      "description": "Total duration of the session in seconds. Computed when session ends",
+      "example": 1334
+    },
+
+    "is_active": {
+      "type": "boolean",
+      "description": "True if the session is currently ongoing, false once ended",
+      "default": true
+    },
+
+    "end_reason": {
+      "type": ["string", "null"],
+      "enum": ["user_ended", "timeout", "error", "robot_ended", null],
+      "description": "Why the session was closed. Null while session is still active",
+      "example": "user_ended"
+    },
+
+    "total_events": {
+      "type": "integer",
+      "description": "Running count of all events logged in this session. Incremented on every POST /api/events",
+      "default": 0,
+      "example": 47
+    },
+
+    "event_type_counts": {
+      "type": "object",
+      "description": "Breakdown of total_events by type. Updated live as events arrive.",
+      "required": ["voice_command", "gesture", "wake_word"],
+      "properties": {
+        "voice_command": {
+          "type": "integer",
+          "description": "Number of voice_command events in this session",
+          "example": 30
+        },
+        "gesture": {
+          "type": "integer",
+          "description": "Number of gesture events in this session",
+          "example": 12
+        },
+        "wake_word": {
+          "type": "integer",
+          "description": "Number of wake_word events in this session",
+          "example": 5
+        }
+      }
+    },
+
+    "avg_confidence": {
+      "type": ["number", "null"],
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Average confidence_score across all events in this session. Computed when session ends",
+      "example": 0.81
+    },
+
+    "success_rate": {
+      "type": ["number", "null"],
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Proportion of successful events in this session (0–1). Computed when session ends",
+      "example": 0.936
+    },
+
+    "low_quality_event_count": {
+      "type": ["integer", "null"],
+      "description": "Number of events in this session with confidence_score < 0.6. Computed when session ends",
+      "example": 3
+    },
+
+    "retry_count_total": {
+      "type": "integer",
+      "description": "Sum of retry_count across all events in this session",
+      "default": 0,
+      "example": 4
+    },
+
+    "avg_processing_latency_ms": {
+      "type": ["number", "null"],
+      "description": "Average processing latency in ms across all events in this session. Computed when session ends",
+      "example": 812
+    },
+
+    "avg_response_latency_ms": {
+      "type": ["number", "null"],
+      "description": "Average response latency in ms across all events in this session. Computed when session ends",
+      "example": 334
+    }
+  }
+}

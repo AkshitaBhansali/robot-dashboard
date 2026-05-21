@@ -1,0 +1,136 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "RobotEvent",
+  "description": "A single interaction event emitted by the robot or simulator via POST /api/events",
+  "type": "object",
+  "required": ["event_id", "session_id", "event_type", "success"],
+  "properties": {
+    "event_id": {
+      "type": "string",
+      "description": "Unique identifier for this event",
+      "example": "evt_a3f9b1c2"
+    },
+
+    "session_id": {
+      "type": "string",
+      "description": "ID of the session this event belongs to",
+      "example": "sess_88a3f1"
+    },
+
+    "robot_id": {
+      "type": "string",
+      "description": "Identifier of the physical robot unit that produced this event",
+      "default": "bot_01",
+      "example": "bot_01"
+    },
+
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 UTC timestamp of when the event occurred",
+      "example": "2025-08-14T10:05:22Z"
+    },
+
+    "event_type": {
+      "type": "string",
+      "enum": ["voice_command", "gesture", "wake_word"],
+      "description": "Category of the robot interaction"
+    },
+
+    "trigger": {
+      "type": ["string", "null"],
+      "enum": ["wake_word", "button", "api", "scheduled", null],
+      "description": "What caused this event to be produced",
+      "example": "wake_word"
+    },
+
+    "wake_word": {
+      "type": ["string", "null"],
+      "description": "The wake phrase that was heard. Only populated for wake_word events",
+      "example": "Hey Robot"
+    },
+
+    "command_text": {
+      "type": ["string", "null"],
+      "description": "The spoken command text. Null for gesture events",
+      "example": "Raise your left arm"
+    },
+
+    "response_text": {
+      "type": ["string", "null"],
+      "description": "What the robot said or did in response to the command",
+      "example": "Raising left arm"
+    },
+
+    "gesture_detected": {
+      "type": ["string", "null"],
+      "description": "Name of the gesture detected. Null for non-gesture events",
+      "example": "thumbs_up"
+    },
+
+    "language": {
+      "type": "string",
+      "description": "Language code of the spoken command",
+      "default": "en",
+      "example": "en"
+    },
+
+    "confidence_score": {
+      "type": ["number", "null"],
+      "minimum": 0,
+      "maximum": 1,
+      "description": "NLP or gesture recognition confidence score. 0 = no confidence, 1 = certain",
+      "example": 0.85
+    },
+
+    "noise_level": {
+      "type": ["string", "null"],
+      "enum": ["low", "medium", "high", null],
+      "description": "Estimated ambient noise level at the time of the event"
+    },
+
+    "retry_count": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Number of times the user had to repeat themselves before the robot understood",
+      "default": 0,
+      "example": 1
+    },
+
+    "processing_latency_ms": {
+      "type": ["integer", "null"],
+      "description": "Time in ms from wake-word detection to command fully parsed. Null for wake_word events",
+      "example": 1200
+    },
+
+    "response_latency_ms": {
+      "type": ["integer", "null"],
+      "description": "Time in ms from command parsed to robot physically acting. Null for wake_word events",
+      "example": 340
+    },
+
+    "success": {
+      "type": "boolean",
+      "description": "Whether the robot successfully understood and executed the command"
+    },
+
+    "error_code": {
+      "type": ["string", "null"],
+      "enum": [
+        "LOW_CONFIDENCE",
+        "COMMAND_NOT_FOUND",
+        "ROBOT_BUSY",
+        "HARDWARE_ERROR",
+        "TIMEOUT",
+        null
+      ],
+      "description": "Reason for failure when success = false. Null when success = true"
+    },
+
+    "robot_state": {
+      "type": ["string", "null"],
+      "enum": ["idle", "moving", "charging", "speaking", "error", null],
+      "description": "What the robot was doing when this event was produced"
+    }
+  }
+}

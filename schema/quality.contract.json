@@ -1,0 +1,226 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "QualityAPIResponse",
+  "description": "Response contract for GET /api/quality",
+  "type": "object",
+  "properties": {
+    "avgConfidence": {
+      "type": "string",
+      "description": "Average confidence score across all events, expressed to 3 decimal places",
+      "example": "0.798"
+    },
+
+    "confidenceBuckets": {
+      "type": "array",
+      "description": "Distribution of events across confidence ranges. Used for histogram on dashboard.",
+      "items": {
+        "type": "object",
+        "required": ["_id", "count"],
+        "properties": {
+          "_id": {
+            "type": "number",
+            "enum": [0, 0.5, 0.7, 0.85],
+            "description": "Lower bound of the confidence bucket. Ranges: [0–0.5), [0.5–0.7), [0.7–0.85), [0.85–1.0]"
+          },
+          "count": {
+            "type": "integer",
+            "description": "Number of events whose confidence_score falls in this bucket",
+            "example": 11
+          }
+        }
+      }
+    },
+
+    "qualityCategories": {
+      "type": "object",
+      "description": "Events split into 4 quality quadrants based on confidence and success. Used for donut chart.",
+      "required": ["great", "lucky", "broken", "bad"],
+      "properties": {
+        "great": {
+          "type": "integer",
+          "description": "confidence >= 0.85 AND success = true. Robot understood well and acted correctly.",
+          "example": 44
+        },
+        "lucky": {
+          "type": "integer",
+          "description": "confidence < 0.75 AND success = true. Robot succeeded despite low confidence.",
+          "example": 9
+        },
+        "broken": {
+          "type": "integer",
+          "description": "confidence >= 0.85 AND success = false. Robot understood but failed to act.",
+          "example": 3
+        },
+        "bad": {
+          "type": "integer",
+          "description": "confidence < 0.75 AND success = false. Robot neither understood nor acted correctly.",
+          "example": 2
+        }
+      }
+    },
+
+    "confidenceByType": {
+      "type": "array",
+      "description": "Per event_type breakdown of confidence, latency and success rate. Used for grouped bar chart.",
+      "items": {
+        "type": "object",
+        "required": [
+          "_id",
+          "avg_confidence",
+          "avg_latency",
+          "total",
+          "success_rate"
+        ],
+        "properties": {
+          "_id": {
+            "type": "string",
+            "enum": ["voice_command", "gesture", "wake_word"],
+            "description": "The event type"
+          },
+          "avg_confidence": {
+            "type": "number",
+            "description": "Average confidence score for this event type",
+            "example": 0.812
+          },
+          "avg_latency": {
+            "type": "number",
+            "description": "Average processing latency in ms for this event type",
+            "example": 794
+          },
+          "total": {
+            "type": "integer",
+            "description": "Total events of this type",
+            "example": 52
+          },
+          "success_rate": {
+            "type": "number",
+            "description": "Percentage of successful events for this type",
+            "example": 92.3
+          }
+        }
+      }
+    },
+
+    "lowQualityEvents": {
+      "type": "array",
+      "description": "Last 10 events with confidence_score < 0.6. Used for alert feed on dashboard.",
+      "items": {
+        "type": "object",
+        "required": [
+          "event_id",
+          "event_type",
+          "confidence_score",
+          "success",
+          "timestamp",
+          "session_id"
+        ],
+        "properties": {
+          "event_id": { "type": "string", "example": "evt_a3f9b1" },
+          "event_type": {
+            "type": "string",
+            "enum": ["voice_command", "gesture", "wake_word"]
+          },
+          "command_text": {
+            "type": ["string", "null"],
+            "example": "Raise your left arm"
+          },
+          "confidence_score": { "type": "number", "example": 0.51 },
+          "success": { "type": "boolean", "example": false },
+          "timestamp": { "type": "string", "format": "date-time" },
+          "session_id": { "type": "string", "example": "sess_88a3" },
+          "error_code": {
+            "type": ["string", "null"],
+            "example": "LOW_CONFIDENCE"
+          },
+          "noise_level": {
+            "type": ["string", "null"],
+            "enum": ["low", "medium", "high", null]
+          },
+          "retry_count": { "type": "integer", "example": 2 }
+        }
+      }
+    },
+
+    "qualityOverTime": {
+      "type": "array",
+      "description": "Avg confidence and success rate per minute for the last 60 minutes. Used for dual-line chart.",
+      "items": {
+        "type": "object",
+        "required": ["_id", "avg_confidence", "total", "success_rate"],
+        "properties": {
+          "_id": {
+            "type": "string",
+            "description": "Minute bucket in HH:MM format",
+            "example": "10:45"
+          },
+          "avg_confidence": {
+            "type": "number",
+            "description": "Average confidence score in this minute bucket",
+            "example": 0.81
+          },
+          "total": {
+            "type": "integer",
+            "description": "Number of events in this minute bucket",
+            "example": 7
+          },
+          "success_rate": {
+            "type": "number",
+            "description": "Percentage of successful events in this minute bucket",
+            "example": 85.7
+          }
+        }
+      }
+    },
+
+    "sessionQuality": {
+      "type": "array",
+      "description": "Quality summary per session, sorted by avg_confidence descending. Used for session leaderboard table.",
+      "items": {
+        "type": "object",
+        "required": [
+          "_id",
+          "avg_confidence",
+          "avg_latency",
+          "total_events",
+          "success_rate"
+        ],
+        "properties": {
+          "_id": {
+            "type": "string",
+            "description": "session_id",
+            "example": "sess_88a3"
+          },
+          "avg_confidence": {
+            "type": "number",
+            "description": "Average confidence score across all events in this session",
+            "example": 0.843
+          },
+          "avg_latency": {
+            "type": "number",
+            "description": "Average processing latency in ms across all events in this session",
+            "example": 761
+          },
+          "total_events": {
+            "type": "integer",
+            "description": "Total number of events in this session",
+            "example": 11
+          },
+          "success_rate": {
+            "type": "number",
+            "description": "Percentage of successful events in this session",
+            "example": 90.9
+          }
+        }
+      }
+    }
+  },
+  "required": [
+    "avgConfidence",
+    "confidenceBuckets",
+    "qualityCategories",
+    "confidenceByType",
+    "lowQualityEvents",
+    "qualityOverTime",
+    "sessionQuality"
+  ]
+}

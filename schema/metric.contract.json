@@ -1,0 +1,121 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "MetricsAPIResponse",
+  "description": "Response contract for GET /api/metrics",
+  "type": "object",
+  "properties": {
+    "totalEvents": {
+      "type": "integer",
+      "description": "Total number of events ever recorded across all sessions",
+      "example": 1240
+    },
+
+    "totalSessions": {
+      "type": "integer",
+      "description": "Total number of sessions ever recorded",
+      "example": 87
+    },
+
+    "activeSessions": {
+      "type": "integer",
+      "description": "Number of sessions currently marked is_active = true",
+      "example": 2
+    },
+
+    "avgProcessingLatency": {
+      "type": "string",
+      "description": "Average time in ms from wake-word to command parsed, across all events",
+      "example": "794"
+    },
+
+    "avgResponseLatency": {
+      "type": "string",
+      "description": "Average time in ms from command parsed to robot action, across all events",
+      "example": "341"
+    },
+
+    "successRate": {
+      "type": "string",
+      "description": "Percentage of events where success = true, expressed as a string to 1 decimal place",
+      "example": "91.4"
+    },
+
+    "byType": {
+      "type": "array",
+      "description": "Event count grouped by event_type. Used for bar chart on dashboard.",
+      "items": {
+        "type": "object",
+        "required": ["_id", "count"],
+        "properties": {
+          "_id": {
+            "type": "string",
+            "enum": ["voice_command", "gesture", "wake_word"],
+            "description": "The event type"
+          },
+          "count": {
+            "type": "integer",
+            "description": "Total events of this type",
+            "example": 52
+          }
+        }
+      }
+    },
+
+    "latencyOverTime": {
+      "type": "array",
+      "description": "Average processing latency bucketed per minute for the last 60 minutes. Used for line chart.",
+      "items": {
+        "type": "object",
+        "required": ["_id", "avg_latency", "count"],
+        "properties": {
+          "_id": {
+            "type": "string",
+            "description": "Minute bucket in HH:MM format",
+            "example": "10:32"
+          },
+          "avg_latency": {
+            "type": "number",
+            "description": "Average processing latency in ms for that minute bucket",
+            "example": 812
+          },
+          "count": {
+            "type": "integer",
+            "description": "Number of events recorded in that minute",
+            "example": 6
+          }
+        }
+      }
+    },
+
+    "wakeWordStats": {
+      "type": "array",
+      "description": "Wake-word detection outcome split. Used for pie chart on dashboard.",
+      "items": {
+        "type": "object",
+        "required": ["_id", "count"],
+        "properties": {
+          "_id": {
+            "type": "boolean",
+            "description": "true = detected successfully, false = detection failed"
+          },
+          "count": {
+            "type": "integer",
+            "description": "Number of wake-word events with this outcome",
+            "example": 13
+          }
+        }
+      }
+    }
+  },
+  "required": [
+    "totalEvents",
+    "totalSessions",
+    "activeSessions",
+    "avgProcessingLatency",
+    "avgResponseLatency",
+    "successRate",
+    "byType",
+    "latencyOverTime",
+    "wakeWordStats"
+  ]
+}
