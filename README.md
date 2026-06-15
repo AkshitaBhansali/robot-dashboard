@@ -8,6 +8,10 @@ A full-stack pipeline that captures robot interaction events (voice commands, ge
 robot-dashboard/
 ├── schema/
 ├── backend/
+│   ├── config/
+│   ├── middleware/
+│   ├── models/
+│   └── routes/
 ├── simulator/
 └── frontend/
 ```
