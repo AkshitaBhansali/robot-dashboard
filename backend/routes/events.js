@@ -2,9 +2,10 @@ const express = require("express");
 const router = express.Router();
 const Event = require("../models/Event");
 const Session = require("../models/Session");
+const validateEventBody = require("../middleware/validateEvent");
 
 //POST /api/events — save a new event
-router.post("/", async (req, res) => {
+router.post("/", validateEventBody, async (req, res) => {
   try {
     const event = new Event({
       event_id: req.body.event_id,
@@ -37,7 +38,7 @@ router.post("/", async (req, res) => {
           total_events: 1,
           [`event_type_counts.${req.body.event_type}`]: 1,
         },
-      }
+      },
     );
 
     res.status(201).json({ message: "Event saved!", event });

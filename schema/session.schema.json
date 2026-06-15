@@ -105,7 +105,7 @@
 
     "low_quality_event_count": {
       "type": ["integer", "null"],
-      "description": "Number of events in this session with confidence_score < 0.6. Computed when session ends",
+      "description": "Number of events in this session with confidence_score < CONFIDENCE_LOW (default 0.5, see backend/config/confidence.js). Computed when session ends",
       "example": 3
     },
 

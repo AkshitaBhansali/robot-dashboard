@@ -12,7 +12,7 @@
 
     "confidenceBuckets": {
       "type": "array",
-      "description": "Distribution of events across confidence ranges. Used for histogram on dashboard.",
+      "description": "Distribution of events across confidence ranges. Boundaries come from backend/config/confidence.js (CONFIDENCE_LOW, CONFIDENCE_MEDIUM, CONFIDENCE_HIGH; defaults 0.5, 0.7, 0.85). Used for histogram on dashboard.",
       "items": {
         "type": "object",
         "required": ["_id", "count"],
@@ -38,22 +38,22 @@
       "properties": {
         "great": {
           "type": "integer",
-          "description": "confidence >= 0.85 AND success = true. Robot understood well and acted correctly.",
+          "description": "confidence >= CONFIDENCE_HIGH (default 0.85, see backend/config/confidence.js) AND success = true. Robot understood well and acted correctly.",
           "example": 44
         },
         "lucky": {
           "type": "integer",
-          "description": "confidence < 0.75 AND success = true. Robot succeeded despite low confidence.",
+          "description": "confidence < CONFIDENCE_HIGH (default 0.85, see backend/config/confidence.js) AND success = true. Robot succeeded despite low confidence.",
           "example": 9
         },
         "broken": {
           "type": "integer",
-          "description": "confidence >= 0.85 AND success = false. Robot understood but failed to act.",
+          "description": "confidence >= CONFIDENCE_HIGH (default 0.85, see backend/config/confidence.js) AND success = false. Robot understood but failed to act.",
           "example": 3
         },
         "bad": {
           "type": "integer",
-          "description": "confidence < 0.75 AND success = false. Robot neither understood nor acted correctly.",
+          "description": "confidence < CONFIDENCE_HIGH (default 0.85, see backend/config/confidence.js) AND success = false. Robot neither understood nor acted correctly.",
           "example": 2
         }
       }
@@ -103,7 +103,7 @@
 
     "lowQualityEvents": {
       "type": "array",
-      "description": "Last 10 events with confidence_score < 0.6. Used for alert feed on dashboard.",
+      "description": "Last 10 events with confidence_score < CONFIDENCE_LOW (default 0.5, see backend/config/confidence.js). Used for alert feed on dashboard.",
       "items": {
         "type": "object",
         "required": [

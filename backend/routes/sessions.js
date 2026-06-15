@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const Session = require("../models/Session");
 const Event = require("../models/Event");
+const { CONFIDENCE_LOW } = require("../config/confidence");
 
 //POST /api/sessions/start
 router.post("/start", async (req, res) => {
@@ -38,7 +39,7 @@ router.post("/end/:session_id", async (req, res) => {
             (
               withConfidence.reduce((s, e) => s + e.confidence_score, 0) /
               withConfidence.length
-            ).toFixed(3)
+            ).toFixed(3),
           )
         : null;
 
@@ -46,19 +47,19 @@ router.post("/end/:session_id", async (req, res) => {
     const success_rate =
       events.length > 0
         ? parseFloat(
-            (events.filter((e) => e.success).length / events.length).toFixed(3)
+            (events.filter((e) => e.success).length / events.length).toFixed(3),
           )
         : null;
 
     //Latency averages
     const withProcessing = events.filter(
-      (e) => e.processing_latency_ms != null
+      (e) => e.processing_latency_ms != null,
     );
     const avg_processing_latency_ms =
       withProcessing.length > 0
         ? Math.round(
             withProcessing.reduce((s, e) => s + e.processing_latency_ms, 0) /
-              withProcessing.length
+              withProcessing.length,
           )
         : null;
 
@@ -67,17 +68,17 @@ router.post("/end/:session_id", async (req, res) => {
       withResponse.length > 0
         ? Math.round(
             withResponse.reduce((s, e) => s + e.response_latency_ms, 0) /
-              withResponse.length
+              withResponse.length,
           )
         : null;
 
     //Quality and retry counts
     const low_quality_event_count = events.filter(
-      (e) => e.confidence_score != null && e.confidence_score < 0.6
+      (e) => e.confidence_score != null && e.confidence_score < CONFIDENCE_LOW,
     ).length;
     const retry_count_total = events.reduce(
       (s, e) => s + (e.retry_count || 0),
-      0
+      0,
     );
 
     //Event type counts
@@ -103,7 +104,7 @@ router.post("/end/:session_id", async (req, res) => {
         retry_count_total,
         event_type_counts,
       },
-      { new: true }
+      { new: true },
     );
 
     res.json({ message: "Session ended!", session: updated });
@@ -126,7 +127,7 @@ router.get("/", async (req, res) => {
 router.get("/:session_id/events", async (req, res) => {
   try {
     const events = await Event.find({ session_id: req.params.session_id }).sort(
-      { timestamp: 1 }
+      { timestamp: 1 },
     );
     res.json(events);
   } catch (err) {

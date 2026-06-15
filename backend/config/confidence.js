@@ -1,0 +1,5 @@
+module.exports = {
+  CONFIDENCE_LOW: 0.5,
+  CONFIDENCE_MEDIUM: 0.7,
+  CONFIDENCE_HIGH: 0.85,
+};

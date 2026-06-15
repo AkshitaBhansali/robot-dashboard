@@ -2,6 +2,11 @@ const express = require("express");
 const router = express.Router();
 const Event = require("../models/Event");
 const Session = require("../models/Session");
+const {
+  CONFIDENCE_LOW,
+  CONFIDENCE_MEDIUM,
+  CONFIDENCE_HIGH,
+} = require("../config/confidence");
 
 router.get("/", async (req, res) => {
   try {
@@ -23,7 +28,13 @@ router.get("/", async (req, res) => {
       {
         $bucket: {
           groupBy: "$confidence_score",
-          boundaries: [0, 0.5, 0.7, 0.85, 1.01],
+          boundaries: [
+            0,
+            CONFIDENCE_LOW,
+            CONFIDENCE_MEDIUM,
+            CONFIDENCE_HIGH,
+            1.01,
+          ],
           default: "other",
           output: { count: { $sum: 1 } },
         },
@@ -31,24 +42,24 @@ router.get("/", async (req, res) => {
     ]);
 
     // 3. Quality categories
-    // great    = confidence >= 0.85 AND success
-    // lucky    = confidence <  0.75 AND success
-    // broken   = confidence >= 0.85 AND failed
-    // bad      = confidence <  0.75 AND failed
+    // great    = confidence >= CONFIDENCE_HIGH AND success
+    // lucky    = confidence <  CONFIDENCE_HIGH AND success
+    // broken   = confidence >= CONFIDENCE_HIGH AND failed
+    // bad      = confidence <  CONFIDENCE_HIGH AND failed
     const great = await Event.countDocuments({
-      confidence_score: { $gte: 0.85 },
+      confidence_score: { $gte: CONFIDENCE_HIGH },
       success: true,
     });
     const lucky = await Event.countDocuments({
-      confidence_score: { $lt: 0.75 },
+      confidence_score: { $lt: CONFIDENCE_HIGH },
       success: true,
     });
     const broken = await Event.countDocuments({
-      confidence_score: { $gte: 0.85 },
+      confidence_score: { $gte: CONFIDENCE_HIGH },
       success: false,
     });
     const bad = await Event.countDocuments({
-      confidence_score: { $lt: 0.75 },
+      confidence_score: { $lt: CONFIDENCE_HIGH },
       success: false,
     });
 
@@ -78,14 +89,14 @@ router.get("/", async (req, res) => {
       },
     ]);
 
-    // 5. Low quality events (confidence < 0.6) — for the dashboard alert feed
+    // 5. Low quality events (confidence < CONFIDENCE_LOW) — for the dashboard alert feed
     const lowQualityEvents = await Event.find({
-      confidence_score: { $lt: 0.6 },
+      confidence_score: { $lt: CONFIDENCE_LOW },
     })
       .sort({ timestamp: -1 })
       .limit(10)
       .select(
-        "event_id event_type command_text confidence_score success timestamp session_id"
+        "event_id event_type command_text confidence_score success timestamp session_id",
       );
 
     // 6. Quality trend over time (last 60 mins, per minute)
