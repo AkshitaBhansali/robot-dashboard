@@ -1,6 +1,8 @@
 # Interaction Analytics Dashboard — Robot Logging Pipeline
 
-A full-stack pipeline that captures robot interaction events (voice commands, gestures, wake-word triggers), stores them in MongoDB, and exposes usage and quality metrics through a REST API.
+A full-stack pipeline that captures robot interaction events (voice commands, gestures, wake-word triggers), stores them in MongoDB, exposes usage and quality metrics through a REST API, and visualises them in a live React dashboard.
+
+![Dashboard](docs/dashboard.png)
 
 ## Project Structure
 
@@ -13,13 +15,16 @@ robot-dashboard/
 │   ├── models/
 │   └── routes/
 ├── simulator/
-└── frontend/
+├── frontend/
+│   └── src/
+└── docs/
 ```
 
-- **schema/** — JSON Schema contracts for events, sessions, and API responses
-- **backend/** — Express.js + MongoDB API
-- **simulator/** — Python script that generates simulated robot events
-- **frontend/** — React dashboard (in progress)
+- **schema/**: JSON Schema contracts for events, sessions, and API responses
+- **backend/**: Express.js + MongoDB API
+- **simulator/**: Python script that generates simulated robot events
+- **frontend/**: React dashboard (Vite + Recharts)
+- **docs/**: Screenshots
 
 ## Prerequisites
 
@@ -37,7 +42,14 @@ npm install
 cp .env.example .env
 ```
 
-Edit the `.env` file and add your MongoDB connection string.
+Edit the `.env` file and add your MongoDB connection string and port:
+
+```text
+MONGO_URI=mongodb+srv://<user>:<password>@<cluster-host>.mongodb.net/robot-dashboard?retryWrites=true&w=majority
+PORT=3000
+```
+
+In MongoDB Atlas, make sure a database user exists and your IP address is allowed under Network Access.
 
 ### 2. Simulator
 
@@ -46,9 +58,17 @@ cd simulator
 pip install requests
 ```
 
+### 3. Frontend
+
+```bash
+cd frontend
+npm install
+cp .env.example .env    # optional, defaults to http://localhost:3000
+```
+
 ## Running the Project
 
-Open two terminals.
+Open three terminals.
 
 ### Terminal 1 — Backend
 
@@ -71,6 +91,29 @@ cd simulator
 python simulator.py
 ```
 
+Press Ctrl+C to stop the simulator.
+
+### Terminal 3 — Frontend
+
+```bash
+cd frontend
+npm run dev
+```
+
+Open http://localhost:5173.
+
+## Dashboard
+
+The dashboard polls `GET /api/metrics` and `GET /api/quality` every 5 seconds and renders:
+
+- Four KPI tiles: total events, success rate, processing latency, active sessions
+- Processing latency over time (per minute, last 60 minutes)
+- Success rate and confidence over time (per minute, last 60 minutes)
+- Quality donut: great / lucky / broken / bad
+- Confidence distribution across score ranges
+
+The frontend talks to the backend only through `frontend/src/api.js`, using the response contracts in `schema/`, so it stays decoupled from the backend internals. If the backend becomes unreachable, the dashboard shows a banner and keeps the last data it received. Chart times are in UTC.
+
 ## API Endpoints
 
 | Method | Endpoint                        | Description                                                       |
@@ -90,13 +133,15 @@ All event, session, and API response structures are defined in the `schema/` dir
 
 The `POST /api/events` endpoint validates incoming payloads against `schema/event.schema.json` using **AJV** before storing them in MongoDB.
 
+Per the schema, `processing_latency_ms` and `response_latency_ms` are `null` for `wake_word` events, and the simulator and metrics queries follow this.
+
 ## Technology Stack
 
 - **Backend:** Node.js, Express.js
 - **Database:** MongoDB Atlas
 - **Validation:** AJV (JSON Schema Validation)
 - **Simulator:** Python
-- **Frontend:** React (under development)
+- **Frontend:** React, Vite, Recharts
 
 ## Features
 
@@ -106,3 +151,4 @@ The `POST /api/events` endpoint validates incoming payloads against `schema/even
 - Quality monitoring endpoints
 - JSON Schema–based API contracts
 - Simulated robot event generation for testing
+- Live React dashboard with KPI tiles, trend charts, quality donut, and confidence distribution
