@@ -46,14 +46,12 @@ router.get("/", async (req, res) => {
       {
         $match: {
           timestamp: { $gte: sixtyMinsAgo },
-          processing_latency_ms: { $exists: true },
+          processing_latency_ms: { $ne: null },
         },
       },
       {
         $group: {
-          _id: {
-            $dateToString: { format: "%H:%M", date: "$timestamp" },
-          },
+          _id: { $dateToString: { format: "%H:%M", date: "$timestamp" } },
           avg_latency: { $avg: "$processing_latency_ms" },
           count: { $sum: 1 },
         },

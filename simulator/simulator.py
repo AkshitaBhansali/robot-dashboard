@@ -140,7 +140,7 @@ def build_event(session_id, event_type):
         event["wake_word"]             = random.choice(["Hey Robot", "OK Robot", "Robot wake up"])
         event["trigger"]               = "wake_word"
         event["response_text"]         = "Yes, I'm listening"
-        event["processing_latency_ms"] = max(50, int(random.gauss(300, 80)))
+        event["processing_latency_ms"] = None
         event["response_latency_ms"]   = None
         if not success:
             event["error_code"] = random.choice(ERROR_CODES["wake_word"])
@@ -193,26 +193,23 @@ def run_session():
     if not start_session(session_id, user_id):
         return
 
-    # Every session begins with a wake word
-    send_event(session_id, "wake_word")
-    time.sleep(random.uniform(0.3, 0.7))
+    end_reason = "robot_ended"   # used if interrupted
+    try:
+        send_event(session_id, "wake_word")
+        time.sleep(random.uniform(0.3, 0.7))
 
-    # Random mix of voice commands and gestures
-    num_events = random.randint(5, 15)
-    for _ in range(num_events):
-        event_type = random.choices(
-            ["voice_command", "gesture"],
-            weights=[70, 30]
+        num_events = random.randint(5, 15)
+        for _ in range(num_events):
+            event_type = random.choices(["voice_command", "gesture"], weights=[70, 30])[0]
+            send_event(session_id, event_type)
+            time.sleep(random.uniform(0.5, 1.5))
+
+        end_reason = random.choices(
+            ["user_ended", "timeout", "error", "robot_ended"],
+            weights=[75, 15, 7, 3]
         )[0]
-        send_event(session_id, event_type)
-        time.sleep(random.uniform(0.5, 1.5))
-
-    # End reason is mostly user_ended, occasionally timeout or error
-    end_reason = random.choices(
-        ["user_ended", "timeout", "error", "robot_ended"],
-        weights=[75, 15, 7, 3]
-    )[0]
-    end_session(session_id, end_reason)
+    finally:
+        end_session(session_id, end_reason)
 
 # ── Main loop ──────────────────────────────────────────────────────────────────
 
